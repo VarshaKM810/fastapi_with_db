@@ -1,11 +1,10 @@
+import os
 import smtplib
 from email.message import EmailMessage
 from dotenv import load_dotenv
 load_dotenv()
 app_password = os.getenv("APP_PASSWORD")
 sender_email = os.getenv("SENDER_EMAIL")
-
-from secrets import password
 
 
 def send_email(reciever_email: str,subject: str,content: str)->str:
@@ -21,7 +20,7 @@ def send_email(reciever_email: str,subject: str,content: str)->str:
 
     # Connect to Gmail Server
     with smtplib.SMTP_SSL('smtp.gmail.com',465) as server:
-        server.login(sender_email,password)
+        server.login(sender_email, app_password)
         server.send_message(msg)
 
 

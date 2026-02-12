@@ -1,6 +1,6 @@
 import os
 from azure.ai.inference import ChatCompletionsClient
-from azure.ai.inference.models import SystemMessage, UserMessage
+from azure.ai.inference.models import SystemMessage, UserMessage, AssistantMessage
 from azure.core.credentials import AzureKeyCredential
 
 endpoint = "https://models.github.ai/inference"
@@ -14,22 +14,23 @@ client = ChatCompletionsClient(
     credential=AzureKeyCredential(token),
 )
 
-def get_completion(user_message, system_message="You are a helpful assistant."):
+def get_completion(user_message, system_message="You are a helpful assistant.", history=None):
     """
-    Get a completion from the AI model.
-    
-    Args:
-        user_message: The user's message/question
-        system_message: The system prompt (default: "You are a helpful assistant.")
-    
-    Returns:
-        The model's response
+    Get a completion from the AI model with optional history.
     """
+    messages = [SystemMessage(system_message)]
+    
+    if history:
+        for msg in history:
+            if msg.role == 'user':
+                messages.append(UserMessage(msg.content))
+            elif msg.role == 'assistant':
+                messages.append(AssistantMessage(msg.content))
+                
+    messages.append(UserMessage(user_message))
+
     response = client.complete(
-        messages=[
-            SystemMessage(system_message),
-            UserMessage(user_message),
-        ],
+        messages=messages,
         model=model
     )
     return response.choices[0].message.content

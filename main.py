@@ -6,12 +6,30 @@ from db import get_db,DATABASE_URL
 from sqlalchemy import create_engine
 import os
 from models import Base
+from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI()
+#cros 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
+
+from routes.file_routes import router as file_router
+from fastapi.staticfiles import StaticFiles
 
 app.include_router(user_router)
 app.include_router(ai_response_router)
 app.include_router(email_router)
+app.include_router(file_router)
+
+# Mount uploads directory to serve files
+if not os.path.exists("uploads"):
+    os.makedirs("uploads")
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 
 #to create database
@@ -26,4 +44,4 @@ def read_root():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0p", port=8000,reload=True)
+    uvicorn.run(app, host="0.0.0.0", port=8000,reload=True)
